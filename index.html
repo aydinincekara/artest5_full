@@ -107,6 +107,7 @@
             <video id="vid1" src="media_klasoru/video1.mp4" loop crossorigin="anonymous" playsinline muted></video>
             <video id="vid2" src="media_klasoru/video2.mp4" loop crossorigin="anonymous" playsinline muted></video>
             <video id="vid3" src="media_klasoru/video3.mp4" loop crossorigin="anonymous" playsinline muted></video>
+            <video id="vid4" src="media_klasoru/video4.mp4" loop crossorigin="anonymous" playsinline muted></video>
         </a-assets>
 
         <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
@@ -119,6 +120,9 @@
         </a-entity>
         <a-entity mindar-image-target="targetIndex: 2" class="ar-target" data-video="#vid3">
             <a-video src="#vid3" position="0 0 0" width="1" height="1.84"></a-video>
+        </a-entity>
+            <a-entity mindar-image-target="targetIndex: 3" class="ar-target" data-video="#vid4">
+            <a-video src="#vid4" position="0 0 0" width="1" height="0.56"></a-video>
         </a-entity>
 
     </a-scene>
