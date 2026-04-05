@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    
+    <title>AR Video Deneyimi</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#151515">
+    <link rel="apple-touch-icon" href="media_klasoru/uygulama_ikonu.png">
+
+    <meta property="og:title" content="AR Video Deneyimi Projesi">
+    <meta property="og:description" content="Artırılmış gerçeklik ile hedef görselleri tarayın ve videoları canlandırın.">
+    <meta property="og:image" content="media_klasoru/resim1.jpeg"> 
+    <meta property="og:type" content="website">
+    
+    <script src="https://aframe.io/releases/1.3.0/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.2/dist/mindar-image-aframe.prod.js"></script>
+
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-TZN6MVBK6K"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-TZN6MVBK6K');
+    </script>
+
+    <script type="text/javascript">
+        (function(c,l,a,r,i,t,y){
+            c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+            t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+            y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+        })(window, document, "clarity", "script", "w3dhek8pil");
+    </script>
+
+    <style>
+        body { margin: 0; overflow: hidden; font-family: sans-serif; background-color: #000; color: white; }
+        
+        #start-screen {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(15, 15, 15, 0.98); z-index: 9999;
+            display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px; box-sizing: border-box;
+        }
+        #start-screen h2 { font-size: 2.2em; margin-bottom: 0.5em; }
+        #start-screen .info-box { background: rgba(255, 255, 255, 0.05); padding: 20px; border-radius: 12px; max-width: 600px; margin-bottom: 30px;}
+        #start-screen .info-box p { font-size: 1.1em; line-height: 1.6em; margin: 0; }
+        #start-screen .warning { color: #ffcc00; font-weight: bold; margin-top: 15px; display: block;}
+
+        #loading-text { font-size: 1.2em; color: #a0a0a0; animation: blink 1.5s infinite; margin-top: 20px;}
+        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
+
+        button { border: none; cursor: pointer; font-weight: bold; transition: all 0.3s ease; box-shadow: 0 4px 6px rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: center; gap: 8px; }
+        
+        #start-btn { padding: 18px 40px; font-size: 20px; border-radius: 30px; background-color: #28a745; color: white; display: none; }
+        #start-btn:hover { background-color: #218838; transform: translateY(-2px); }
+
+        #ui-container {
+            position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%);
+            z-index: 1000; display: none; gap: 15px; flex-wrap: wrap; justify-content: center; width: 100%;
+        }
+        
+        .action-btn { padding: 14px 25px; font-size: 16px; border-radius: 25px; background-color: rgba(230, 230, 230, 0.95); color: #333; }
+        .action-btn:hover { background-color: rgba(255, 255, 255, 1); transform: translateY(-2px); }
+
+        #log-modal { display: none; position: absolute; top: 5%; left: 5%; width: 90%; height: 90%; background: rgba(20,20,20,0.98); z-index: 10000; padding: 30px; box-sizing: border-box; border-radius: 15px; border: 1px solid #444; overflow-y: auto;}
+        #log-modal h3 { color: #17a2b8; margin-top: 0; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 15px; }
+        th, td { border: 1px solid #555; padding: 12px; text-align: left; }
+        th { background-color: #333; color: white; }
+    </style>
+</head>
+<body>
+
+    <div id="start-screen">
+        <h2>AR Sistemine Hoş Geldiniz</h2>
+        <div class="info-box">
+            <p><strong>Bilgi:</strong> Lütfen cihazınızın sesini açın. Videoların sesini dinleyebilmek için sistem başladığında ekranın altındaki butonları kullanabilirsiniz.</p>
+            <p class="warning">⚠️ <strong>Güvenlik İzinleri:</strong> Tarayıcınızın <strong>Kamera erişimine izin vermeniz</strong> gerekmektedir. İzin verilmezse sistem çalışmayacaktır.</p>
+        </div>
+        <p id="loading-text">QR ve AR Sistemleri Yükleniyor, Lütfen Bekleyin...</p>
+        <button id="start-btn">Sistemi Başlat</button>
+    </div>
+
+    <div id="ui-container">
+        <button id="audio-btn" class="action-btn">Sesi Aç 🔇</button>
+        <button id="open-log-btn" class="action-btn">Sistem Logları 📋</button>
+    </div>
+
+    <div id="log-modal">
+        <button id="close-log-btn" style="background:#dc3545; color:white; padding:10px 20px; border-radius:20px; float:right;">Kapat X</button>
+        <h3>Sistem Değişiklik Logları</h3>
+        <table>
+            <tr><th>Tarih</th><th>Versiyon</th><th>Notlar</th></tr>
+            <tr><td>02.04.2026</td><td>v1.5</td><td>Video oranları h=yükseklik/genişlik formülüne göre kusursuz olarak entegre edildi. Arayüz oval tasarıma geçirildi.</td></tr>
+        </table>
+    </div>
+
+    <a-scene mindar-image="imageTargetSrc: media_klasoru/targets.mind; autoStart: false; uiLoading: no; uiError: no; uiScanning: no;" color-space="sRGB" renderer="colorManagement: true" vr-mode-ui="enabled: false">
+        
+        <a-assets timeout="10000">
+            <video id="vid1" src="media_klasoru/video1.mp4" loop crossorigin="anonymous" playsinline muted></video>
+            <video id="vid2" src="media_klasoru/video2.mp4" loop crossorigin="anonymous" playsinline muted></video>
+            <video id="vid3" src="media_klasoru/video3.mp4" loop crossorigin="anonymous" playsinline muted></video>
+            <video id="vid4" src="media_klasoru/video4.mp4" loop crossorigin="anonymous" playsinline muted></video>
+        </a-assets>
+
+        <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+
+        <a-entity mindar-image-target="targetIndex: 0" class="ar-target" data-video="#vid1">
+            <a-video src="#vid1" position="0 0 0" width="1" height="2.45"></a-video>
+        </a-entity>
+        <a-entity mindar-image-target="targetIndex: 1" class="ar-target" data-video="#vid2">
+            <a-video src="#vid2" position="0 0 0" width="1" height="0.57"></a-video>
+        </a-entity>
+        <a-entity mindar-image-target="targetIndex: 2" class="ar-target" data-video="#vid3">
+            <a-video src="#vid3" position="0 0 0" width="1" height="1.85"></a-video>
+        </a-entity>
+        <a-entity mindar-image-target="targetIndex: 3" class="ar-target" data-video="#vid4">
+            <a-video src="#vid4" position="0 0 0" width="1" height="0.57"></a-video>
+        </a-entity>
+
+    </a-scene>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const startBtn = document.getElementById("start-btn");
+            const loadingText = document.getElementById("loading-text");
+            const sceneEl = document.querySelector('a-scene');
+            const audioBtn = document.getElementById("audio-btn");
+            
+            sceneEl.addEventListener('loaded', () => { loadingText.style.display = "none"; startBtn.style.display = "block"; });
+            setTimeout(() => { if(startBtn.style.display !== "block") { loadingText.style.display = "none"; startBtn.style.display = "block"; } }, 10500);
+
+            startBtn.addEventListener('click', function() {
+                document.getElementById("start-screen").style.display = "none";
+                document.getElementById("ui-container").style.display = "flex";
+                sceneEl.systems["mindar-image-system"].start();
+            });
+
+            let isMuted = true;
+            audioBtn.addEventListener('click', function() {
+                isMuted = !isMuted;
+                document.querySelectorAll('video').forEach(v => v.muted = isMuted);
+                audioBtn.innerText = isMuted ? "Sesi Aç 🔇" : "Sesi Kapat 🔊";
+            });
+
+            document.getElementById("open-log-btn").addEventListener('click', () => { document.getElementById("log-modal").style.display = 'block'; });
+            document.getElementById("close-log-btn").addEventListener('click', () => { document.getElementById("log-modal").style.display = 'none'; });
+
+            document.querySelectorAll('.ar-target').forEach(target => {
+                const vidId = target.getAttribute('data-video');
+                const videoEl = document.querySelector(vidId);
+                target.addEventListener("targetFound", () => { if(videoEl) videoEl.play(); });
+                target.addEventListener("targetLost", () => { if(videoEl) { videoEl.pause(); videoEl.currentTime = 0; } });
+            });
+        });
+
+        // PWA ve Eruda Modülleri
+        if ('serviceWorker' in navigator) { navigator.serviceWorker.register('./sw.js').catch((err) => console.log("SW hatası: ", err)); }
+        
+        if (window.location.search.indexOf('debug=true') > -1) {
+            var script = document.createElement('script');
+            script.src = 'https://cdn.jsdelivr.net/npm/eruda';
+            document.body.appendChild(script);
+            script.onload = function () { eruda.init(); console.log("Geliştirici modu aktif!"); }
+        }
+    </script>
+</body>
+</html>
